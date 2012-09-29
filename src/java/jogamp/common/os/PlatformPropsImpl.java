@@ -1,5 +1,6 @@
 package jogamp.common.os;
 
+import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
@@ -74,7 +75,7 @@ public abstract class PlatformPropsImpl {
         
         CPU_ARCH = getCPUTypeImpl(ARCH_lower);
         ABI_TYPE = guessABITypeImpl(CPU_ARCH);
-        OS_TYPE = getOSTypeImpl();
+        OS_TYPE = getOSTypeImpl(CPU_ARCH);
         os_and_arch = getOSAndArch(OS_TYPE, CPU_ARCH, ABI_TYPE);        
     }
 
@@ -174,9 +175,27 @@ public abstract class PlatformPropsImpl {
             } } );
     }
     
-    private static final OSType getOSTypeImpl() throws RuntimeException {
+    private static final boolean guessBroadcomVCIV(CPUType cpuType) {
+        if(CPUFamily.ARM != cpuType.family) {
+            return false;
+        }
+        return AccessController.doPrivileged(new PrivilegedAction<Boolean>() {
+            private final File vcliblocation = new File(
+                    "/opt/vc/lib/libbcm_host.so");
+                public Boolean run() {
+                    if ( vcliblocation.isFile() ) {
+                        return new Boolean(true);
+                    }
+                    return new Boolean(false);
+                } } ).booleanValue();
+    }
+    
+    private static final OSType getOSTypeImpl(CPUType cpuType) throws RuntimeException {
         if ( AndroidVersion.isAvailable ) {
             return OSType.ANDROID;
+        }
+        if ( guessBroadcomVCIV(cpuType)) {
+        	return OSType.LINUX_BCM_VC_IV;
         }
         if ( OS_lower.startsWith("linux") ) {
             return OSType.LINUX;            
@@ -290,7 +309,8 @@ public abstract class PlatformPropsImpl {
               break;
             case OPENKODE:
               _os_and_arch = "openkode-" + _os_and_arch; // TODO: think about that   
-              break;                
+              break;
+            case LINUX_BCM_VC_IV:
             case LINUX:
               _os_and_arch = "linux-" + _os_and_arch;  
               break;
