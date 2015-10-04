@@ -10,11 +10,11 @@ package jogamp.test;
 
 import java.lang.reflect.Method;
 
-import junit.framework.AssertionFailedError;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestResult;
-import junit.framework.TestSuite;
+import org.junit.AssertionFailedError;
+import org.junit.Test;
+import org.junit.TestCase;
+import org.junit.TestResult;
+import org.junit.TestSuite;
 
 import com.simontuffs.onejar.Boot;
 import com.simontuffs.onejar.JarClassLoader;
